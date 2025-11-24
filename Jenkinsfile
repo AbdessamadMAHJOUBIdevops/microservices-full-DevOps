@@ -10,14 +10,14 @@ pipeline {
     }
 
     stages {
-        stage('📥 Checkout') {
+        stage('Checkout') {
             steps {
                 checkout scm
                 echo "🚀 Démarrage du pipeline pour la branche : ${env.BRANCH_NAME}"
             }
         }
 
-        stage('⚙️ Test & Build Microservices') {
+        stage('Test & Build Microservices') {
             parallel {
                 // ----------------------------------------------------
                 //  PYTHON BACKEND (Product API)
@@ -26,9 +26,9 @@ pipeline {
                     steps {
                         script {
                             dir('product-api') {
-                                // 1. Simulation des Tests Unitaires (Real Life)
+                                
                                 echo "🧪 Lancement des tests unitaires Python..."
-                                // Dans la vraie vie : sh "pip install pytest && pytest"
+                                sh "pip install pytest && pytest"
                                 sh "echo 'Tests Python passés avec succès ✅'"
 
                                 // 2. Build de l'image
@@ -45,9 +45,9 @@ pipeline {
                     steps {
                         script {
                             dir('order-api') {
-                                // 1. Simulation des Tests Unitaires
+                                
                                 echo "🧪 Lancement des tests unitaires Node.js..."
-                                // Dans la vraie vie : sh "npm install && npm test"
+                                sh "npm install && npm test"
                                 sh "echo 'Tests Node.js passés avec succès ✅'"
 
                                 // 2. Build de l'image
@@ -60,14 +60,14 @@ pipeline {
                 // ----------------------------------------------------
                 //  REACT FRONTEND
                 // ----------------------------------------------------
-                stage('⚛️ React: Test & Build') {
+                stage('React: Test & Build') {
                     steps {
                         script {
                             dir('frontend') {
-                                // 1. Simulation des Tests
+                                
                                 echo "🧪 Lancement des tests unitaires React..."
                                 // Note : Pour React, il faut souvent mettre CI=true
-                                // Dans la vraie vie : sh "npm install && CI=true npm test"
+                                sh "npm install && CI=true npm test"
                                 sh "echo 'Tests Frontend passés avec succès ✅'"
 
                                 // 2. Build de l'image (Nginx)
@@ -79,7 +79,7 @@ pipeline {
             }
         }
 
-        // 🛡️ SCAN DE SÉCURITÉ (DevSecOps)
+        // SCAN DE SÉCURITÉ (DevSecOps)
         // On le fait après le build pour scanner l'image créée
         stage('Security Scan (Trivy)') {
         
@@ -91,7 +91,7 @@ pipeline {
             
         }
 
-        // 🚀 PUSH (Uniquement sur MAIN)
+        // PUSH (Uniquement sur MAIN)
         stage('Push to Registry') {
             when {
                 branch 'main'  
@@ -128,17 +128,17 @@ def buildDockerImage(String imageName) {
 }
 
 def scanImage(String imageName) {
-    echo "🔍 Scanning ${imageName}..."
-    // --exit-code 0 permet de ne pas bloquer le build si faille trouvée (pour l'exercice)
+    echo "Scanning ${imageName}..."
+    // --exit-code 0 permet de ne pas bloquer le build si faille trouvée (just pour tester)
     // En prod, on met --exit-code 1 pour bloquer.
     sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-        aquasec/trivy image --severity CRITICAL --no-progress --exit-code 0 \
+        aquasec/trivy image --severity CRITICAL --no-progress --exit-code 1 \
         ${ACR_URL}/${imageName}:${DOCKER_TAG}"
 }
 
 def pushImage(String imageName) {
     withCredentials([usernamePassword(credentialsId: env.ACR_CREDENTIALS_ID, passwordVariable: 'ACR_PASS', usernameVariable: 'ACR_USER')]) {
-        sh "docker login ${ACR_URL} -u ${ACR_USER} -p ${ACR_PASS}"
+        sh "echo "$ACR_PASS" | docker login  ${ACR_URL} -u ${ACR_USER} --password-stdin "
         sh "docker push ${ACR_URL}/${imageName}:${DOCKER_TAG}"
     }
 }
