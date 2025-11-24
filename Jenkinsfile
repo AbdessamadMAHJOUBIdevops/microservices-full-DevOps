@@ -82,13 +82,13 @@ pipeline {
         // 🛡️ SCAN DE SÉCURITÉ (DevSecOps)
         // On le fait après le build pour scanner l'image créée
         stage('Security Scan (Trivy)') {
-            steps {
+        
                 parallel {
                     stage('Scan Python') { steps { scanImage("product-api") } }
                     stage('Scan Node') { steps { scanImage("order-api") } }
                     stage('Scan Front') { steps { scanImage("frontend-app") } }
                 }
-            }
+            
         }
 
         // 🚀 PUSH (Uniquement sur MAIN)
