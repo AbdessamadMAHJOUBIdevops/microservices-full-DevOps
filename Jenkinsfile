@@ -123,7 +123,7 @@ def scanImage(String imageName) {
 def pushImage(String imageName) {
     withCredentials([usernamePassword(credentialsId: env.ACR_CREDENTIALS_ID, passwordVariable: 'ACR_PASS', usernameVariable: 'ACR_USER')]) {
         // Attention aux guillemets ici, j'ai corrigé la syntaxe du login aussi
-        sh "echo "$ACR_PASS" | docker login ${ACR_URL} -u ${ACR_USER} --password-stdin"
+        sh """echo "$ACR_PASS" | docker login ${ACR_URL} -u "${ACR_USER}" --password-stdin"""
         sh "docker push ${ACR_URL}/${imageName}:${DOCKER_TAG}"
     }
 }
