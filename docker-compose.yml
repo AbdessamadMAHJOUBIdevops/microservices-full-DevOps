@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  #  Le Backend Produits
+  product-api:
+    build: ./product-api
+    ports:
+      - "5000:5000"
+    networks:
+      - shop-network
+
+  #  Le Backend Commandes
+  order-api:
+    build: ./order-api
+    ports:
+      - "3001:3001"
+    networks:
+      - shop-network
+
+  #  Le Frontend (Nginx)
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    networks:
+      - shop-network
+    depends_on:
+      - product-api
+      - order-api
+
+#  On crée un réseau privé pour eux
+networks:
+  shop-network:
+    driver: bridge
